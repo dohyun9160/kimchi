@@ -1,0 +1,39 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kr.kimchi.mappers.attachmentMapper">
+
+	<!-- 첨부파일 보기 -->
+	<select id="attachmentAll" resultType="com.kr.kimchi.vo.AttachmentVO">
+		select * from attachment 
+		ORDER BY attachment_no DESC
+	</select>
+
+	<!-- 첨부파일 보기 -->
+	<select id="attachmentSelect" resultType="com.kr.kimchi.vo.AttachmentVO">
+		select * from attachment 
+		where attachment_no = #{attachment_no}
+	</select>
+	
+	<!-- 첨부파일 추가 -->
+	<insert id="attachmentInsert" parameterType="com.kr.kimchi.vo.AttachmentVO">
+		insert into attachment
+		(attachment_name, attachment_location) values
+		(#{attachment_name}, #{attachment_location})
+	</insert>
+	
+	<!-- 첨부파일 수정 -->
+	<update id="attachmentUpdate" parameterType="com.kr.kimchi.vo.AttachmentVO">
+		update attachment set 
+		attachment_name = #{attachment_name},
+		attachment_location = #{attachment_location}
+		where attachment_no = #{attachment_no}
+	</update>
+	
+	<!-- 첨부파일 삭제 -->
+	<delete id="attachmentDelete">
+		delete from attachment 
+		where attachment_no = #{attachment_no}
+	</delete>
+
+</mapper>

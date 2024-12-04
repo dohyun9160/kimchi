@@ -1,0 +1,125 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kr.kimchi.mappers.obtainMapper">
+
+	<!-- 조달계획 보기_전체 -->
+	<select id="obtainAll" resultType="com.kr.kimchi.vo.ObtainVO">
+		select * from obtain
+		ORDER BY
+		obtain_no DESC
+		LIMIT #{startRow}, #{pageSize}
+	</select>
+
+	<!-- 전체 레코드 수 -->
+	<select id="getTotalCount" resultType="int">
+		SELECT COUNT(*) FROM obtain;
+	</select>
+
+	<!-- 조달계획 보기_상세 -->
+	<select id="obtainSelect" resultType="com.kr.kimchi.vo.ObtainVO">
+		select * from obtain
+		where obtain_no = #{obtain_no}
+	</select>
+
+	<!-- 조달계획 추가 -->
+	<insert id="obtainInsert"
+		parameterType="com.kr.kimchi.vo.ObtainVO">
+		insert into obtain
+		(ma_id, obtain_quantity,
+		obtain_deliveryDate, obtain_status, obtain_registrationDate,
+		obtain_price,
+		obtain_document, user_id, production_no, partner_taxid)
+		values
+		(#{ma_id}, #{obtain_quantity}, #{obtain_deliveryDate}, '조달계획확인중', now(),
+		#{obtain_price},
+		0, #{user_id}, #{production_no}, #{partner_taxid})
+	</insert>
+
+	<!-- 조달계획 수정 -->
+	<update id="obtainUpdate"
+		parameterType="com.kr.kimchi.vo.ObtainVO">
+		update obtain set
+		obtain_quantity = #{obtain_quantity},
+		obtain_price=#{obtain_price},
+		obtain_deliveryDate = #{obtain_deliveryDate},
+		obtain_registrationDate =
+		now()
+		where obtain_no = #{obtain_no}
+	</update>
+
+	<!-- 조달계획 승인 -->
+	<update id="obtainCheck"
+		parameterType="com.kr.kimchi.vo.ObtainVO">
+		UPDATE production
+		JOIN obtain ON production.production_no = obtain.production_no
+		SET
+		production.production_status =
+		CASE
+		WHEN #{obtain_status} = '조달계획확인완료' THEN '조달중'
+		ELSE production.production_status
+		END,
+		obtain.obtain_document = IF(#{obtain_status} = '조달계획확인완료', 1, 0),
+		obtain.obtain_status = IF(#{obtain_status} = '조달계획확인완료', '조달중', '조달계획취소'),
+		obtain.obtain_registrationDate = NOW(),
+		production.production_registrationDate =
+		CASE
+		WHEN #{obtain_status} = '조달계획확인완료' THEN NOW()
+		ELSE production.production_registrationDate
+		END
+		WHERE
+		obtain.obtain_no = #{obtain_no}
+	</update>
+
+
+	<!-- 구매발주서 발부 -->
+	<update id="obtainPa" parameterType="com.kr.kimchi.vo.ObtainVO">
+		update obtain set 
+		obtain_document = 1
+		where obtain_no = #{obtain_no}
+	</update>
+
+	<!-- obSelectList 선택 리스트 -->
+	<resultMap type="com.kr.kimchi.vo.UserVO" id="UserVO">
+		<result column="user_name" property="user_name"/>
+	</resultMap>
+	<resultMap type="com.kr.kimchi.vo.PartnerVO" id="PartnerVO">
+		<result column="partner_companyname" property="partner_companyname" />
+	</resultMap>
+	<resultMap type="com.kr.kimchi.vo.MaterialVO" id="MaterialVO">
+		<result column="ma_name" property="ma_name"/>
+		<result column="ma_price" property="ma_price"/>
+	</resultMap>
+	
+	<resultMap type="com.kr.kimchi.vo.ObtainVO" id="ObtainVO">
+		<result column="obtain_no" property="obtain_no"/>
+		<result column="obtain_quantity" property="obtain_quantity"/>
+		<result column="obtain_deliveryDate" property="obtain_deliveryDate"/>
+		<result column="obtain_registrationDate" property="obtain_registrationDate"/>
+		
+		<association property="materialVO" javaType="com.kr.kimchi.vo.MaterialVO" resultMap="MaterialVO"/>
+		<association property="userVO" javaType="com.kr.kimchi.vo.UserVO" resultMap="UserVO"/>
+		<association property="partnerVO" javaType="com.kr.kimchi.vo.PartnerVO" resultMap="PartnerVO"/>
+	</resultMap>
+	<select id="obSelectList" resultMap="ObtainVO">
+		select
+			a.obtain_no,
+			a.obtain_quantity,
+			a.obtain_deliveryDate,
+			a.obtain_registrationDate,			
+			a.user_id,
+			a.partner_taxid,
+			b.user_name,
+			c.ma_name,
+			c.ma_price,
+			d.partner_companyname
+		from obtain a 
+			join user b on a.user_id = b.user_id
+			join material c on a.ma_id = c.ma_id
+			join partner d on a.partner_taxid = d.partner_taxid
+		where a.obtain_document = 0
+		order by a.obtain_no desc
+	</select>
+
+
+</mapper>

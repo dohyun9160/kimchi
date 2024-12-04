@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kr.kimchi.mappers.itemMapper">
+
+	<resultMap type="com.kr.kimchi.vo.ItemVO" id="ItemVO">
+		<id property="item_no" column="item_no" />
+		<result property="item_category" column="item_category" />
+		<result property="item_name" column="item_name" />
+		<result property="item_price" column="item_price" />
+		<result property="item_unit" column="item_unit" />
+		<result property="item_weight" column="item_weight" />
+		<result property="item_specifications"
+			column="item_specifications" />
+		<result property="item_bomRegistered"
+			column="item_bomRegistered" />
+		<result property="item_stockquantity"
+			column="item_stockquantity" />
+		<result property="item_availablestock"
+			column="item_availablestock" />
+		<result property="item_basicstock" column="item_basicstock" />
+		<result property="item_storage" column="item_storage" />
+		<result property="item_productionDate"
+			column="item_productionDate" />
+		<result property="attachment_no" column="attachment_no" />
+		<collection property="bomVO"
+			ofType="com.kr.kimchi.vo.BomVO" resultMap="BomVO" />
+	</resultMap>
+	<resultMap type="com.kr.kimchi.vo.BomVO" id="BomVO">
+		<result property="bom_schedule" column="bom_schedule" />
+		<result property="bom_other" column="bom_other" />
+	</resultMap>
+
+	<!-- 제품정보(전체)+페이징 -->
+	<select id="itemAll" resultMap="ItemVO">
+		SELECT item.*, bom.bom_schedule
+		FROM item
+		LEFT JOIN bom ON item.item_no = bom.item_no
+		<where>
+			<if test="item_name != null and item_name != ''">
+				item.item_name LIKE CONCAT('%', #{item_name}, '%')
+			</if>
+		</where>
+		ORDER BY item.item_no DESC
+		LIMIT #{startRow}, #{pageSize}
+	</select>
+
+	<!-- 전체 레코드 수 -->
+	<select id="getTotalCount" resultType="int">
+		SELECT COUNT(*) FROM item;
+	</select>
+
+	<!-- 검색에 따른 총 레코드 수 -->
+	<select id="itemSearch" parameterType="Map" resultType="int">
+		SELECT COUNT(*) FROM item
+		<where>
+			<if test="item_name != null and item_name != ''">
+				item_name LIKE CONCAT('%', #{item_name}, '%')
+			</if>
+		</where>
+	</select>
+
+	<!-- 제품정보(상세) -->
+	<select id="itemSelect" resultMap="ItemVO">
+		SELECT item.*,
+		bom.bom_schedule
+		FROM item
+		LEFT JOIN bom ON item.item_no = bom.item_no
+		WHERE item.item_no = #{item_no}
+	</select>
+
+	<!-- 제품등록_bom제외 -->
+	<insert id="itemInsert" parameterType="com.kr.kimchi.vo.ItemVO">
+		insert into item
+		(item_category, item_name, item_price,
+		item_unit,item_weight,
+		item_bomRegistered,
+		item_specifications, item_stockquantity,
+		item_availablestock,
+		item_basicstock, item_storage,
+		item_productionDate, attachment_no)
+		values
+		(#{item_category},
+		#{item_name}, #{item_price},
+		#{item_unit},#{item_weight},0,
+		#{item_specifications},0, 0,
+		#{item_basicstock}, #{item_storage},
+		#{item_productionDate}, #{attachment_no})
+	</insert>
+
+	<!-- 제품정보수정 -->
+	<update id="itemUpdate" parameterType="com.kr.kimchi.vo.ItemVO">
+		update item set
+		item_category = #{item_category}, item_name = #{item_name},
+		item_price= #{item_price}, item_unit=#{item_unit},
+		item_specifications
+		= #{item_specifications},
+		item_basicstock = #{item_basicstock},
+		item_storage = #{item_storage},
+		attachment_no= #{attachment_no}
+		where
+		item_no = #{item_no}
+	</update>
+
+	<!-- bom등록여부수정 -->
+	<update id="bomCheck" parameterType="com.kr.kimchi.vo.ItemVO">
+		update item set
+		item_bomRegistered = #{item_bomRegistered}
+		where item_no = #{item_no}
+	</update>
+
+	<!-- 제품삭제 -->
+	<delete id="itemDelete">
+		delete from item
+		where item_no=#{item_no}
+	</delete>
+
+</mapper>

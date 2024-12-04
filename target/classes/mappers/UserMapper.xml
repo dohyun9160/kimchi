@@ -1,0 +1,87 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kr.kimchi.mappers.UserMapper">
+
+	<!-- 사용자 로그인 -->
+	<select id="userLogin" parameterType="java.util.Map"
+		resultType="java.util.Map">
+		select user_id, user_name, user_department, user_approval
+		from user
+		where user_id=#{user_id}
+		and user_pw=#{user_pw}
+	</select>
+
+	<!-- 사용자 전체 + 페이징 -->
+	<select id="userAll" resultType="com.kr.kimchi.vo.UserVO">
+		SELECT * FROM user
+		<where>
+			<if test="user_name != null and user_name != ''">
+				AND user_name LIKE CONCAT('%', #{user_name}, '%')
+			</if>
+			<if test="user_department != null and user_department != ''">
+				AND user_department LIKE CONCAT('%', #{user_department}, '%')
+			</if>
+		</where>
+		LIMIT #{startRow}, #{pageSize}
+	</select>
+
+	<!-- 전체 레코드 수 -->
+	<select id="getTotalCount" resultType="int">
+		SELECT COUNT(*) FROM user;
+	</select>
+
+	<!-- 검색에 따른 총 레코드 수 -->
+	<select id="userSearch" parameterType="Map" resultType="int">
+		SELECT COUNT(*) FROM user
+		<where>
+			<if test="user_name != null and user_name != ''">
+				AND user_name LIKE CONCAT('%', #{user_name}, '%')
+			</if>
+			<if test="user_department != null and user_department != ''">
+				AND user_department LIKE CONCAT('%', #{user_department}, '%')
+			</if>
+		</where>
+	</select>
+
+	<!-- 사용자 상세 -->
+	<select id="userSelect" resultType="com.kr.kimchi.vo.UserVO">
+		select * from user
+		where user_id =#{user_id}
+	</select>
+
+	<!-- 사용자 회원가입 -->
+	<insert id="userInsert" parameterType="com.kr.kimchi.vo.UserVO">
+		insert into user(user_id,
+		user_pw, user_email, user_name,
+		user_number, user_department,
+		user_approval) values
+		(#{user_id}, #{user_pw}, #{user_email},
+		#{user_name}, #{user_number}, #{user_department}, 0)
+	</insert>
+
+	<!-- 사용자 id중복체크 -->
+	<select id="userIdCheck" parameterType="String" resultType="java.lang.Integer">
+		select count(*) from user 
+		where user_id = #{user_id}
+	</select>
+
+	<!-- 사용자 정보 수정 -->
+	<update id="userUpdate" parameterType="com.kr.kimchi.vo.UserVO">
+		update user set
+		user_email = #{user_email}, user_name = #{user_name},
+		user_number = #{user_number}, user_department = #{user_department}
+		where user_id = #{user_id}
+	</update>
+
+	<!-- 사용자 승인 -->
+	<update id="userApproval"
+		parameterType="com.kr.kimchi.vo.UserVO">
+		update user set
+		user_approval = if(#{user_approval} = 0, 1, 0)
+		where user_id = #{user_id}
+	</update>
+
+
+
+</mapper>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kr.kimchi.mappers.ChartMapper">
+
+   <!-- 전체 재고 정보 쿼리 -->
+   <select id="chartData" parameterType="map"
+      resultType="com.kr.kimchi.vo.ChartVO">
+      SELECT ma_name, SUM(ma_stockQuantity) AS totalQuantity,
+      SUM(ma_stockValue) AS totalValue
+      FROM material
+      GROUP BY ma_name
+   </select>
+
+<!-- 날짜별 전체 재고 총액 쿼리 -->
+<select id="totalStockChart" resultType="map">
+    SELECT DATE(date) AS date, 
+           SUM(totalValue) AS totalValue
+    FROM (
+        SELECT DATE(ma_date) AS date, 
+               SUM(ma_stockValue) AS totalValue
+        FROM material
+        WHERE ma_date >= CURDATE() - INTERVAL 7 DAY
+        GROUP BY DATE(ma_date)
+
+        UNION ALL
+
+        SELECT DATE(ma_update) AS date, 
+               SUM(ma_stockValue) AS totalValue
+        FROM material
+        WHERE ma_update >= CURDATE() - INTERVAL 7 DAY
+        GROUP BY DATE(ma_update)
+    ) AS combined
+    GROUP BY DATE(date)
+    ORDER BY DATE(date)
+</select>
+
+      <!-- 전체 입고 수량 -->
+   <select id="inChart" parameterType="map" resultType="com.kr.kimchi.vo.ChartVO">
+      SELECT io.io_id,
+         io.io_status,
+         io.io_quantity,
+         io.io_date,
+         material.ma_name,
+         material.ma_price,
+         material.ma_id,
+         (io.io_quantity * material.ma_price) AS inValue
+      FROM io
+      LEFT JOIN material ON io.ma_id = material.ma_id
+      WHERE io_status = '입고'
+      <if test="io_id != null">
+         AND io_id = #{io_id}
+      </if>
+   </select>
+
+   <!-- 전체 출고 수량 -->
+   <select id="outChart" parameterType="map" resultType="com.kr.kimchi.vo.ChartVO">
+      SELECT io.io_id,
+         io.io_status,
+         io.io_quantity,
+         io.io_date,
+         material.ma_name,
+         material.ma_price,
+         material.ma_id,
+         (io.io_quantity * material.ma_price) AS outValue
+      FROM io
+      LEFT JOIN material ON io.ma_id = material.ma_id
+      WHERE io_status = '출고'
+      <if test="io_id != null">
+         AND io_id = #{io_id}
+      </if>
+   </select>
+   
+	<!-- 물품별 계약량과 계약금액_누적 -->
+	<select id="totalitemChart" parameterType="Map" resultType="com.kr.kimchi.vo.ChartVO">
+		SELECT
+		i.item_name,
+		SUM(c.contracts_quantity) AS totalcon_quantity,
+		SUM(c.contracts_price) AS totalcon_price
+		FROM
+		contracts c
+		JOIN
+		item i ON c.item_no = i.item_no
+		GROUP BY
+		c.item_no, i.item_name;
+	</select>
+	
+</mapper>

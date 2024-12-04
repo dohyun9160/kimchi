@@ -1,0 +1,20 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kr.kimchi.mappers.codeMapper">
+
+	<!-- 코드추가 -->
+	<insert id="codeInsert" parameterType="com.kr.kimchi.vo.CodeVO" useGeneratedKeys="true" keyProperty="code_id">
+		insert into code
+		(ca_id,code_name) values
+		(#{ca_id}, #{code_name})
+	</insert>
+
+	<!-- 코드 삭제 -->
+	<delete id="codeDelete">
+		delete from code 
+		where code_id = #{code_id}
+	</delete>
+	
+
+</mapper>

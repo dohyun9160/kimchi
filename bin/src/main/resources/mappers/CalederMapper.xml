@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace ="com.kr.kimchi.mappers.CalenderMapper">
+	<select id="calenderList" resultType="CalenderVO">
+		select 
+		 a.prp_no,
+		 a.prp_issueDate,
+		 d.partner_companyname
+		 from prp a
+		 join pa b on a.pa_no = b.pa_no
+		 join obtain c on b.pa_referenceNo = c.obtain_no
+		 join partner d on c.partner_taxid = d.partner_taxid
+		 order by a.prp_no
+	</select>
+	
+
+</mapper>

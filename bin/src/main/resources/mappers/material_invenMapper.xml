@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="kr.co.kim.material_invenMapper"> <!--중요-->
+  	
+  	
+  	<!--재고조회(전체검색)-->
+	<select id="material_all" resultType="materialVO">
+		select * from material
+	</select>
+	
+	<!--재고(상세검색)-->
+	<select id="material_serch" parameterType="String" resultType="MaterialVO">
+	select *
+	from material
+	where ma_id=#{ma_id} or ma_name=#{ma_name} or ma_category=#{ma_category} or 
+	</select>
+	
+	<!--재고조회 (detail)-->
+	<select id="material_detail" parameterType="int" resultType="java.util.HashMap">
+		select ma.*,att.attachment_location 
+		from material as ma
+			inner join attachment as att
+			on ma.attachment_no = att.attachment_no
+		where ma.ma_id=#{id}
+	</select>
+	
+	<!--재고조회(detail)_date값-->
+	<select id="ma_detail_date" parameterType="int" resultType="java.util.HashMap">
+		select ma.ma_id , MAX(io.io_date),MIN(io.io_date)
+		from material as ma
+		inner join io 
+		on ma.ma_id=io.ma_id
+		where ma.ma_id= #{ma_id} and io_status='입고';
+	</select>	
+	
+	<!--자재추가-->
+<insert id="material_add" parameterType="MaterialVO">
+	INSERT INTO `kimchi`.`material`
+	(ma_id,
+	ma_name,
+	ma_category,
+	ma_price,
+	ma_unit,
+	ma_specifications,
+	ma_StockQuantity,
+	ma_AvailableStock,
+	ma_BasicStock,	
+	ma_stock_value,
+	ma_storage,s
+	ma_updateDate,
+	attachment_no)
+	VALUES
+	(ma_id=#{ma_id},
+	ma_category=#{ma_category},
+	ma_price=#{ma_price},
+	ma_unit=#{ma_unit},
+	ma_specifications=#{ma_specifications},
+	ma_StockQuantity=#{ma_StockQuantity},
+	ma_AvailableStock=#{ma_AvailableStock},
+	ma_BasicStock=#{ma_BasicStock},
+	ma_stock_value=#{ma_stock_value},
+	ma_storage=#{ma_storage},
+	ma_updateDate=#{ma_updateDate},
+	attachment_no=#{attachment_no})
+	
+</insert>
+
+
+	
+	
+	
+  
+  </mapper>

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.kr.kimchi.mappers.BoardMapper">
+  
+  <insert id="create" parameterType="com.kr.kimchi.vo.BoardVO">
+  insert into board (board_title, board_content, board_comment, board_createdDate, board_modifiedDate, attachment_no, user_id)
+  values(#{board_title}, #{board_content}, #{board_comment}, now(), now(), #{attachment_no}, #{user_id})
+  </insert>
+  
+  <select id="read" resultType="com.kr.kimchi.vo.BoardVO">
+   select
+   board_no, board_title, board_content, board_comment, board_createdDate, board_modifiedDate, attachment_no, user_id
+  from
+   board
+  where board_no = #{board_no} 
+   </select>
+  
+  <update id="update">
+   update board set board_title =#{board_title}, 
+                  board_content =#{board_content},
+                  board_comment =#{board_comment}
+  where board_no =#{board_no}                   
+   </update>
+  
+  <delete id="delete">
+  delete from board where board_no =#{board_no}
+    </delete>
+  
+  <select id="listAll" resultType="com.kr.kimchi.vo.BoardVO">
+   <![CDATA[
+    select
+   board_no, board_title, board_content, board_comment, board_createdDate, board_modifiedDate, attachment_no, user_id
+  from
+   board
+  where board_no > 0
+  order by board_no desc, board_createdDate desc
+  LIMIT #{startRow}, #{pageSize}
+   ]]>
+   </select>
+   
+   <select id="listPage" resultType="com.kr.kimchi.vo.BoardVO">
+   
+   <![CDATA[
+   
+   select
+     board_no, board_title, board_content, board_comment, board_createdDate, board_modifiedDate, attachment_no, user_id
+   from
+     board
+    where board_no > 10
+    order by board_no desc,  
+   board_createdDate desc
+   limit #{page}, 10
+   
+   ]]>
+   
+   </select>
+   
+    <select id="listCriteria" resultType="com.kr.kimchi.vo.BoardVO">
+    
+    <![CDATA[
+
+   
+     select
+      board_no, board_title, board_content, board_comment, board_createdDate, board_modifiedDate, attachment_no, user_id
+     from
+      board
+     where board_no > 0
+     order by board_no desc,  board_createdDate desc
+     limit #{pageStart}, #{perPageNum}
+    
+    ]]>
+        
+    </select>
+    
+    
+    <select id="countPaging" resultType="int">
+    
+    <![CDATA[
+    
+    select 
+      count(board_no)
+    from
+      board
+    where
+      board_no > 0
+    
+    ]]>
+    
+    
+    </select>
+    
+    
+    <select id="listSearch" resultType="com.kr.kimchi.vo.BoardVO">
+    
+    <![CDATA[
+   
+     select *
+      from board
+     where board_no > 0
+     ]]>
+     
+  <include refid="search"></include>
+     
+     <![CDATA[
+       
+     order by board_no desc
+     limit #{pageStart}, #{perPageNum}
+     
+     ]]>
+    
+    </select>
+    
+    <select id="listSearchCount" resultType="int">
+    
+    <![CDATA[
+    
+    select count(board_no)
+     from board
+    where board_no > 0
+    
+    ]]>
+    
+     <include refid="search"></include>
+    
+    </select>
+   
+   <sql id="search">
+   
+         <if test="searchType != null">
+     
+     <if test="searchType == 't'.toString()">
+      and board_title like CONCAT('%', #{keyword}, '%')
+     </if>
+     
+     <if test="searchType == 'c'.toString()">
+      and board_content like CONCAT('%', #{keyword}, '%')
+     </if>
+     
+     <if test="searchType == 'w'.toString()">
+      and board_comment like CONCAT('%', #{keyword}, '%')
+     </if>
+     
+     <if test="searchType == 'tc'.toString()">
+      and ( board_title like CONCAT('%', #{keyword}, '%') OR board_content like CONCAT('%', #{keyword}, '%'))
+     </if>
+     
+     <if test="searchType == 'cw'.toString()">
+      and ( board_content like CONCAT('%', #{keyword}, '%'))
+     </if>
+     
+     <if test="searchType == 'tcw'.toString()">
+ and (  board_title like CONCAT('%', #{keyword}, '%')
+       OR
+        board_content like CONCAT('%', #{keyword}, '%')
+       OR 
+        board_comment like CONCAT('%', #{keyword}, '%')) 
+   
+     </if>
+     
+   </if>
+     
+   
+   </sql>
+  
+  </mapper>

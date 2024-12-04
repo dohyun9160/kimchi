@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kr.kimchi.mappers.paPopMapper">
+	
+	<!-- 구매발주서 내용 -->
+	<resultMap type="com.kr.kimchi.vo.CodeVO" id="CodeVO">
+		<result column="code_id" property="code_id"/>
+		<result column="code_name" property="code_name"/>
+	</resultMap>
+	<resultMap type="com.kr.kimchi.vo.PartnerVO" id="PartnerVO">
+		<result column="partner_taxid" property="partner_taxid"/>
+		<result column="partner_companyname" property="partner_companyname"/>
+		<result column="partner_ownername" property="partner_ownername"/>
+		<result column="partner_number" property="partner_number"/>
+		<result column="partner_email" property="partner_email"/>
+		<result column="partner_fax" property="partner_fax"/>
+	</resultMap>
+	<resultMap type="com.kr.kimchi.vo.ContractsVO" id="ContractsVO">
+		<association property="partnerVO" javaType="com.kr.kimchi.vo.PartnerVO" resultMap="PartnerVO" />
+	</resultMap>
+	<resultMap type="com.kr.kimchi.vo.ProductionVO" id="ProductionVO">
+		<association property="contractsVO" javaType="com.kr.kimchi.vo.ContractsVO" resultMap="ContractsVO"/>
+	</resultMap>
+	<resultMap type="com.kr.kimchi.vo.UserVO" id="UserVO">
+		<result column="user_id" property="user_id"/>
+		<result column="user_name" property="user_name"/>
+		<result column="user_number" property="user_number"/>
+		<result column="user_email" property="user_email"/>
+	</resultMap>
+	<resultMap type="com.kr.kimchi.vo.MaterialVO" id="MaterialVO">
+		<result column="ma_id" property="ma_id"/>
+		<result column="ma_origin" property="ma_origin"/>
+		<result column="ma_name" property="ma_name"/>
+		<result column="ma_specifications" property="ma_specifications"/>
+		<result column="ma_unit" property="ma_unit"/>
+		<result column="ma_price" property="ma_price"/>
+	</resultMap>
+	<resultMap type="com.kr.kimchi.vo.ObtainVO" id="ObtainVO">
+		<result column="obtain_quantity" property="obtain_quantity" />
+		<result column="obtain_deliveryDate" property="obtain_deliveryDate" />
+		<collection property="materialVO" ofType="com.kr.kimchi.vo.MaterialVO" resultMap="MaterialVO"/>
+		<collection property="productionVO" ofType="com.kr.kimchi.vo.ProductionVO" resultMap="ProductionVO" />
+	</resultMap>
+	<resultMap type="com.kr.kimchi.vo.PaVO" id="PaVO">
+		<result column="pa_no" property="pa_no"/>
+		<result column="pa_issueDate" property="pa_issueDate"/>
+		<result column="pa_notes" property="pa_notes"/>
+		<collection property="codeVo" ofType="com.kr.kimchi.vo.CodeVO" resultMap="CodeVO"/>
+		<collection property="obtainVo" ofType="com.kr.kimchi.vo.ObtainVO" resultMap="ObtainVO" />
+		<collection property="userVO" ofType="com.kr.kimchi.vo.UserVO" resultMap="UserVO" />
+	</resultMap>
+	<select id="paPopList" resultMap="PaVO" >
+		select 
+			a.pa_no,
+			a.pa_issueDate,
+			a.pa_notes,
+			a.pa_referenceNo,
+			a.code_id,
+			b.obtain_quantity,
+			b.obtain_deliveryDate,
+			c.ma_name,
+			c.ma_specifications,
+			c.ma_unit,
+			c.ma_price,
+			c.ma_origin,
+			f.contracts_quantity,
+			f.contracts_price,
+			f.contracts_deliveryDate,
+			d.user_name,
+			d.user_number,
+			d.user_email,
+			g.partner_taxid,
+			g.partner_companyname,
+			g.partner_ownername,
+			g.partner_number,
+			g.partner_email,
+			g.partner_fax,
+			h.code_name
+		from pa a
+		join obtain b on b.obtain_no = a.pa_referenceNo
+		join material c on b.ma_id = c.ma_id
+		join user d on a.user_id = d.user_id
+		join production e on b.production_no = e.production_no
+		join contracts f on  e.contracts_no = f.contracts_no
+		join partner g on b.partner_taxid = g.partner_taxid 
+		join code h on a.code_id = h.code_id
+		where a.pa_no =#{pa_no};
+	</select>
+	
+	
+	
+
+</mapper>

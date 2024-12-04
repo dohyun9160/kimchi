@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kr.kimchi.mappers.prpDetailPopMapper">
+	
+		
+	<!-- 진척리스트 detail -->
+	<select id="prpPopData" resultType="com.kr.kimchi.vo.PrpVO">
+		select * from prp where prp_no = #{prp_no}; 
+	</select>
+	
+	<update id="prpUpdate">
+		update prp set 
+		PRP_revisionDate = #{prp_revisionDate} , prp_progress = #{prp_progress}, prp_notes = #{prp_notes} 
+		where prp_no = #{prp_no};
+	</update>
+					
+
+
+
+</mapper>

@@ -1,0 +1,54 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kr.kimchi.mappers.bom_maMapper">
+
+	<!-- bom정보_자재_전체-->
+	<select id="bom_maSelect" resultType="com.kr.kimchi.vo.Bom_maVO">
+		select ma_id,
+		bom_ma_amount, bom_ma_process from bom_ma
+		where item_no = #{item_no}
+	</select>
+	
+	<!--  bom정보_자재_각자 -->
+	<select id="bom_maMaterial"  resultType="com.kr.kimchi.vo.Bom_maVO">
+		select * from bom_ma 
+		where ma_id = #{ma_id} and item_no = #{item_no}
+	</select>
+
+	<!-- bom정보_자재 추가 -->
+	<insert id="bom_maInsert" parameterType="java.util.List">
+		insert into bom_ma(item_no, ma_id, bom_ma_amount, bom_ma_process)
+		values
+		<foreach collection="list" item="bom_malist" separator=",">
+			(#{bom_malist.item_no}, #{bom_malist.ma_id},
+			#{bom_malist.bom_ma_amount}, #{bom_malist.bom_ma_process})
+		</foreach>
+	</insert>
+
+	<!-- bom정도_자재 수정 -->
+	<update id="bom_maUpdate" parameterType="java.util.List">
+			update bom_ma set
+		<foreach collection="list" item="bom_malist" separator=",">
+			bom_ma_amount = #{bom_malist.bom_ma_amount},
+			bom_ma_process = #{bom_malist.bom_ma_process}
+			where item_no = #{bom_malist.item_no} and
+			ma_id = #{bom_malist.ma_id}
+		</foreach>
+	</update>
+
+	<!-- bom정보_자재 선택적삭제 -->
+	<delete id="bom_maDeleteSelect">
+		delete from bom_ma
+		where item_no = #{item_no} and
+		ma_id=#{ma_id}
+	</delete>
+
+
+	<!-- bom정보_자재 삭제(bom & item 삭제시) -->
+	<delete id="bom_maDeleteAll" parameterType="int">
+		delete from bom_ma
+		where item_no = #{item_no}
+	</delete>
+
+</mapper>

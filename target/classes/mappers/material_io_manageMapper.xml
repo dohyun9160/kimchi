@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="kr.co.kim.material_io_manageMapper"> <!--중요-->
+  
+  <!--{자재입고관리}상세 검색-->
+	<select id="io_detail" resultType="IOVO">
+	select * from io
+	where io_status=#{status} or io_date=#{date} or invoice_issuance_status=#{i_status}
+	
+	</select>
+	
+	
+	
+  </mapper>
