@@ -1,0 +1,76 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kr.kimchi.mappers.productionMapper">
+
+	<!-- 생산계획 보기_전체+페이징 -->
+	<select id="productionAll"
+		resultType="com.kr.kimchi.vo.ProductionVO">
+		select * from production
+		ORDER BY production_no DESC
+		LIMIT
+		#{startRow}, #{pageSize}
+	</select>
+
+	<!-- 전체 레코드 수 -->
+	<select id="getTotalCount" resultType="int">
+		SELECT COUNT(*) FROM
+		production;
+	</select>
+
+	<!-- 생산계획 보기_상세 -->
+	<select id="productionSelect"
+		resultType="com.kr.kimchi.vo.ProductionVO">
+		select * from production
+		where production_no =
+		#{production_no}
+	</select>
+
+	<!-- 생산계획 추가 -->
+	<insert id="productionInsert"
+		parameterType="com.kr.kimchi.vo.ProductionVO">
+		insert into production
+		(production_quantity,
+		production_deliveryDate, production_status,
+		production_registrationDate, user_id, contracts_no) values
+		(#{production_quantity}, #{production_deliveryDate}, '생산계획확인중',
+		now(),
+		#{user_id}, #{contracts_no})
+	</insert>
+
+
+	<!-- 생산계획 수정_생산량, 생산납기일 -->
+	<update id="productionUpdate"
+		parameterType="com.kr.kimchi.vo.ProductionVO">
+		update production set
+		production_quantity =
+		#{production_quantity},
+		production_deliveryDate =
+		#{production_deliveryDate},
+		production_registrationDate = now(),
+		user_id = #{user_id}
+		where production_no = #{production_no}
+	</update>
+
+
+	<!-- 생산계획 승인여부 -->
+	<update id="productionCheck"
+		parameterType="com.kr.kimchi.vo.ProductionVO">
+		UPDATE contracts
+		JOIN production ON contracts.contracts_no = production.contracts_no
+		SET
+		contracts.contracts_status = CASE
+		WHEN #{production_status} = '생산계획확인완료' THEN '생산계획진행중'
+		ELSE contracts.contracts_status
+		END,
+		production.production_status = #{production_status},
+		production.production_registrationDate = NOW(),
+		contracts.contracts_registrationDate = CASE
+		WHEN #{production_status} = '생산계획확인완료' THEN NOW()
+		ELSE contracts.contracts_registrationDate
+		END
+		WHERE
+		production.production_no = #{production_no}
+	</update>
+
+</mapper>

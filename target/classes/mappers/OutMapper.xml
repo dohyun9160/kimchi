@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kr.kimchi.mappers.OutMapper">
+
+	<!-- 전체 출고 목록 조회 -->
+	<select id="outList" parameterType="map"
+		resultType="com.kr.kimchi.vo.IOVO">
+		SELECT io.*, material.ma_name
+		FROM io
+		LEFT JOIN material ON io.ma_id = material.ma_id
+		WHERE io_status = '출고'
+		<if test="io_id != null">
+			AND io_id LIKE CONCAT('%', #{io_id}, '%')
+		</if>
+		ORDER BY io_date DESC
+		LIMIT #{startRow}, #{pageSize}
+	</select>
+
+	<!-- 출고 상태의 검색에 따른 총 개수 -->
+	<select id="getSearch" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM io
+		WHERE io_status = '출고'
+		<if test="io_id != null">
+			AND io_id LIKE CONCAT('%', #{io_id}, '%')
+		</if>
+	</select>
+
+	<!-- 선택된 출고 정보 조회 -->
+	<select id="outView" parameterType="int"
+		resultType="com.kr.kimchi.vo.IOVO">
+		SELECT io.*,
+			material.ma_name,
+			material.ma_category,
+			material.ma_price
+		FROM io
+		LEFT JOIN material ON io.ma_id = material.ma_id
+		WHERE io_id = #{io_id}
+		AND io_status = '출고'
+	</select>
+
+	<!-- 출고 정보 삽입 -->
+	<insert id="outAdd" parameterType="com.kr.kimchi.vo.IOVO"
+		useGeneratedKeys="true" keyProperty="io_id">
+		INSERT INTO io
+			(io_status, io_quantity, io_date, io_information, invoice_issuance_status, ma_id,obtain_no)
+		VALUES
+			(#{io_status}, #{io_quantity}, #{io_date}, #{io_information},
+		#{invoice_issuance_status}, #{ma_id}, #{obtain_no});
+	</insert>
+
+	<!-- 자재의 재고 수량 감소 및 업데이트 일자 변경 -->
+	<update id="updateMa" parameterType="com.kr.kimchi.vo.IOVO">
+		UPDATE material
+		SET ma_stockQuantity = ma_stockQuantity - #{io_quantity},
+			ma_update = NOW()
+		WHERE ma_name = #{ma_name};
+	</update>
+
+	<!-- 전체 출고 목록의 총 개수 조회 -->
+	<select id="getTotalCount" resultType="int">
+		SELECT COUNT(*) FROM io
+		WHERE io_status = '출고';  <!-- 출고에 따른 총 개수 조회 -->
+	</select>
+
+</mapper>

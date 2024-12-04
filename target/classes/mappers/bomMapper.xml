@@ -1,0 +1,32 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kr.kimchi.mappers.bomMapper">
+
+	<!-- bom정보_스케줄 보기 -->
+	<select id="bomSelect" resultType="com.kr.kimchi.vo.BomVO">
+		select * from bom 
+		where item_no = #{item_no}
+	</select>
+	
+	<!-- bom정보_스케줄 추가-->
+	<insert id="bomInsert" parameterType="com.kr.kimchi.vo.BomVO">
+		insert into bom(item_no, bom_schedule, bom_other) values
+		(#{item_no}, #{bom_schedule}, #{bom_other})
+	</insert>
+	
+	<!-- bom정보_스케줄 수정-->
+	<update id="bomUpdate" parameterType="com.kr.kimchi.vo.BomVO">
+		update bom set bom_schedule = #{bom_schedule}, bom_other=#{bom_other}
+		where item_no=${item_no}
+	</update>
+	
+	<!-- bom정보_스케줄 삭제 -->
+	<delete id="bomDelete">
+		delete from bom 
+		where item_no=${item_no}
+	</delete>
+
+
+
+</mapper>

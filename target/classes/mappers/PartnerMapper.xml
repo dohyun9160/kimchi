@@ -1,0 +1,84 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kr.kimchi.mappers.PartnerMapper">
+	<!-- 협력회사 로그인 -->
+	<select id="partnerLogin" parameterType="java.util.Map"
+		resultType="java.util.Map">
+		select partner_taxid, partner_approval,partner_companyname from partner 
+		where partner_id = #{partner_id} and partner_pw = #{partner_pw} and partner_taxid=#{partner_taxid}
+	</select>
+
+	<!-- 협력회사 전체 + 페이징 +검색 -->
+	<select id="partnerAll" resultType="com.kr.kimchi.vo.PartnerVO">
+	    select * from partner
+	    <if test="partner_companyname != null and partner_companyname != '' ">
+	        WHERE partner_companyname LIKE CONCAT('%', #{partner_companyname}, '%')
+	    </if>
+	    LIMIT #{startRow}, #{pageSize}
+	</select>
+	
+	<!-- 검색에 따른 총 레코드 수 -->
+	<select id="partnerSearch" parameterType="Map" resultType="int">
+	    SELECT COUNT(*) FROM partner
+	    WHERE 1=1
+	    <if test="partner_companyname != null and partner_companyname != '' ">
+	        AND partner_companyname LIKE CONCAT('%', #{partner_companyname}, '%')
+	    </if>
+	</select>
+	
+	<!-- 전체 레코드 수 -->
+	<select id="getTotalCount" resultType="int">
+        SELECT COUNT(*) FROM partner;
+    </select>
+
+	<!-- 협력회사 상세 -->
+	<select id="partnerSelect"
+		resultType="com.kr.kimchi.vo.PartnerVO">
+		select * from partner
+		where partner_taxid = #{partner_taxid}
+	</select>
+
+	<!-- 협력회사 등록 -->
+	<insert id="partnerInsert"
+		parameterType="com.kr.kimchi.vo.PartnerVO">
+		insert into partner(partner_taxid, partner_id,
+		partner_pw, partner_companyname, partner_number, partner_ownername,
+		partner_fax, partner_email, partner_add, partner_approval) values
+		(#{partner_taxid}, #{partner_id},
+		#{partner_pw},#{partner_companyname},#{partner_number},#{partner_ownername},
+		#{partner_fax},#{partner_email},#{partner_add},0)
+	</insert>
+	
+	<!-- tax중복체크 -->
+	<select id="partnertaxIdCheck" parameterType="String" resultType="java.lang.Integer">
+		select count(*) from partner
+		where
+		partner_taxid = #{partner_taxid}
+	</select>
+
+	<!-- 협력회사 수정_상호, 명칭및 인터넷도메인, 대표자명, 업종, 사업장 -->
+	<update id="partnerUpdate"
+		parameterType="com.kr.kimchi.vo.PartnerVO">
+		update partner set
+		partner_companyname =
+		#{partner_companyname},
+		partner_ownername=#{partner_ownername},
+		partner_number=#{partner_number},
+		partner_fax = #{partner_fax},
+		partner_email = #{partner_email},
+		partner_add = #{partner_add}
+		where
+		partner_taxid = #{partner_taxid}
+	</update>
+
+	<!-- 협력회사 승인 -->
+	<update id="partnerApproval"
+		parameterType="com.kr.kimchi.vo.PartnerVO">
+		update partner set
+		partner_approval = if(#{partner_approval}= 0, 1, 0)
+		where partner_taxid = #{partner_taxid}
+	</update>
+	
+
+</mapper>

@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="kr.co.kimchi.mappers.io_informationMapper"> <!--중요-->
+  
+
+
+<!--입고 추가-->
+<insert id="io_add" parameterType="IOVO">
+	INSERT INTO `kimchi`.`io`
+(
+`io_status`,
+`io_quantity`,
+`io_date`,
+`io_information`,
+`io_return_date`,
+`invoice_issuance_status`,
+`ma_id`,
+`obtain_no`)
+VALUES
+(
+#{io_status},
+#{io_quantity},
+#{io_date},
+#{io_information},
+#{io_return_date},
+#{invoice_issuance_status},
+#{ma_id},
+#{obtain_no})
+	
+</insert>
+
+<!--io_추가 후 조달중-> 조달완료 -->
+<update id="obtain_status" parameterType="int">
+update obtain
+set obtain_status="조달완료"
+where obtain_no=#{obtain_no}
+</update>
+
+<!--io_status 검수확인-->
+<update id="io_status_change" parameterType="int" >
+update 	io 
+set io_status="입고완료",invoice_issuance_status="발행"
+where io_id=#{io_id}
+
+</update>
+
+<!--io_quantity 추가 입고하기-->
+<update id="materia_io" parameterType="StatusCheck">
+
+update material set ma_stockQuantity=ma_stockQuantity+#{io_quantity},ma_date=now() 
+where ma_id=#{ma_id};
+</update>
+
+
+
+
+
+<!--조달중인 material 상세리스트 조회
+-->
+<resultMap type="materialVO" id="MaterialVO">
+	<result column="ma_name" property="ma_name"/>
+	<result column="ma_price" property="ma_price"/>
+	<result column="ma_unit" property="ma_unit"/>
+	<result column="ma_specifications" property="ma_specifications"/>
+</resultMap>
+
+<resultMap type="ObtainVO" id="ObtainVO">
+	<result column="obtain_no" property="obtain_no"/>
+	<result column="user_id" property="user_id"/>
+	<result column="obtain_quantity" property="obtain_quantity"/>
+	<result column="obtain_deliveryDate" property="obtain_deliveryDate"/>
+	<result column="obtain_status" property="obtain_status"/>
+	<result column="production_no" property="production_no"/>
+	<result column="ma_id" property="ma_id"/>
+	<collection property="materialVO" javaType="materialVO" resultMap="MaterialVO"/>	
+</resultMap>
+	
+
+<select id="obtain_malist" resultMap="ObtainVO">
+select 
+ob.obtain_no,ob.user_id,ob.obtain_quantity,ob.obtain_deliveryDate,ob.obtain_status,ob.production_no,ob.ma_id,
+ma.ma_name,ma.ma_price,ma.ma_unit,ma.ma_specifications
+from obtain as ob
+inner join material as ma
+ON ob.ma_id = ma.ma_id
+where ob.obtain_status='조달중'
+</select>
+
+<select id="radio_value" parameterType="ObtainVO" resultMap="ObtainVO">
+select 
+ob.obtain_no,ob.user_id,ob.obtain_quantity,ob.obtain_deliveryDate,ob.obtain_status,
+ma.ma_name,ma.ma_price,ma.ma_unit,ma.ma_specifications
+from obtain as ob
+inner join material as ma
+ON ob.ma_id = ma.ma_id
+where ob.obtain_status='조달중' and ob.obtain_no=#{obtain_no}
+</select>
+
+<!--입고 후 발주담당자 이메일 보내기 -> 이메일 찾기-->
+<select id="io_OK_email" parameterType="int" resultType="IemailVo">
+
+select user.user_id,user.user_email,ob.obtain_no,ma.ma_name
+from obtain as ob
+inner join pa
+on ob.production_no=pa.pa_referenceNo
+inner join user
+on  pa.user_id = user.user_id
+inner join material as ma
+on ob.ma_id = ma.ma_id
+where obtain_no=#{obtain_no} and user_department="발주";
+
+</select>
+
+
+<!--거래명세서-->
+<select id="transaction_statement" parameterType="int" resultType="transactionVO">
+	select ob.obtain_no,ob.user_id,ob.obtain_deliveryDate,ob.obtain_quantity
+	,ma.ma_name,ma.ma_price,ma.ma_specifications,ma.ma_weight,ma.ma_unit,ma.ma_storage
+	,part.partner_companyname,part.partner_number,part.partner_ownername ,part.partner_fax,part.partner_taxid,part.partner_add
+	from obtain as ob
+	inner join material as ma
+	on ob.ma_id = ma.ma_id
+	inner join partner as part
+	on ob.partner_taxid = part.partner_taxid
+	where ob.obtain_no=#{obtain_no}
+</select>
+
+
+
+<!--입고출고 정보조회-->
+<select id="io-list-all" resultType="InlistVO">
+
+SELECT io.*, ob.obtain_no, part.partner_companyname
+FROM io
+INNER JOIN obtain AS ob
+    ON io.obtain_no = ob.obtain_no
+INNER JOIN partner AS part
+    ON ob.partner_taxid = part.partner_taxid
+ where io_status="입고중" or io_status="입고완료"
+ 
+</select>
+
+<!-- 페이징 -->
+<!-- <select id="io-list-paging" parameterType="java.util.HashMap" resultType="InlistVO">
+    SELECT io.*, ob.obtain_no, part.partner_companyname
+    FROM io
+    INNER JOIN obtain AS ob
+        ON io.obtain_no = ob.obtain_no
+    INNER JOIN partner AS part
+        ON ob.partner_taxid = part.partner_taxid
+    WHERE io_status="입고중" OR io_status="입고완료"
+    ORDER BY io_id DESC
+    LIMIT #{start}, #{count}
+</select> -->
+
+<!-- 페이징 -->
+<select id="io-list-paging" parameterType="java.util.HashMap" resultType="InlistVO">
+    SELECT io.*, ob.obtain_no, part.partner_companyname
+    FROM io
+    INNER JOIN obtain AS ob ON io.obtain_no = ob.obtain_no
+    INNER JOIN partner AS part ON ob.partner_taxid = part.partner_taxid
+    WHERE 
+        <if test="io_status == null or io_status == ''">
+            io.io_status IN ('입고중', '입고완료')
+        </if>
+        <if test="io_status != null and io_status != ''">
+            io.io_status LIKE CONCAT('%', #{io_status}, '%')
+        </if>
+    <if test="partner_companyname != null and partner_companyname != ''">
+        AND part.partner_companyname LIKE CONCAT('%', #{partner_companyname}, '%')
+    </if>
+    ORDER BY io_id DESC
+    LIMIT #{start}, #{count}
+</select>
+
+
+
+
+</mapper>

@@ -1,0 +1,12 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kr.kimchi.mappers.categoryMapper">
+
+	<!-- 카데고리 보기 -->
+	<select id="cateAll" resultType="com.kr.kimchi.vo.CategoryVO">
+		select * from category
+	</select>
+	
+
+</mapper>

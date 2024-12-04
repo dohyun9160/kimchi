@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kr.kimchi.mappers.MaterialMapper">
+
+	<!-- 전체 + 페이징 + 검색(ma_name기준) -->
+	<select id="maList" parameterType="map" resultType="com.kr.kimchi.vo.MaterialVO">
+		SELECT * FROM material
+		WHERE 1=1
+		<if test="ma_name != null and ma_name != ''">
+			AND ma_name LIKE CONCAT('%', #{ma_name}, '%')
+		</if>
+		ORDER BY ma_id DESC
+		LIMIT #{startRow}, #{pageSize}
+	</select>
+
+	<!-- 검색에 따른 총 갯수 -->
+	<select id="getSearch" parameterType="map" resultType="int">
+		SELECT COUNT(*) FROM material
+		WHERE 1=1
+		<if test="ma_name != null and ma_name != ''">
+			AND ma_name LIKE CONCAT('%', #{ma_name}, '%')
+		</if>
+	</select>
+
+	<!-- 전체 maList의 총 개수 조회 -->
+	<select id="getTotalCount" resultType="int">
+		SELECT COUNT(*) FROM
+		material;
+	</select>
+
+	<!-- 선택 -->
+	<select id="maView" parameterType="int" resultType="com.kr.kimchi.vo.MaterialVO">
+		SELECT * FROM material WHERE ma_id = #{ma_id}
+	</select>
+
+	<!-- 추가 -->
+	<insert id="maAdd" parameterType="com.kr.kimchi.vo.MaterialVO">
+		INSERT INTO material
+		(ma_name,
+		ma_category, ma_price, ma_unit, ma_weight, ma_specifications,
+		ma_expiryDate, ma_origin,
+		ma_stockQuantity, ma_availableStock,
+		ma_basicStock, ma_stockValue, ma_storage, ma_date,
+		ma_update,
+		attachment_no)
+		VALUES
+		( #{ma_name}, #{ma_category}, #{ma_price},
+		#{ma_unit}, #{ma_weight},
+		#{ma_specifications}, #{ma_expiryDate},
+		#{ma_origin},
+		#{ma_stockQuantity}, #{ma_availableStock},
+		#{ma_basicStock},
+		#{ma_stockValue}, #{ma_storage}, #{ma_date},
+		#{ma_update},
+		#{attachment_no})
+	</insert>
+
+	<!-- 수정 -->
+	<update id="maUpdate" parameterType="com.kr.kimchi.vo.MaterialVO">
+		UPDATE material
+		SET ma_name = #{ma_name},
+		ma_category =
+		#{ma_category},
+		ma_price = #{ma_price},
+		ma_unit = #{ma_unit},
+		ma_weight =
+		#{ma_weight},
+		ma_specifications = #{ma_specifications},
+		ma_expiryDate =
+		#{ma_expiryDate},
+		ma_origin = #{ma_origin},
+		ma_stockQuantity =
+		#{ma_stockQuantity},
+		ma_availableStock = #{ma_availableStock},
+		ma_basicStock = #{ma_basicStock},
+		ma_stockValue = #{ma_stockValue},
+		ma_storage = #{ma_storage},
+		ma_update = #{ma_update},
+		attachment_no =
+		#{attachment_no}
+		WHERE ma_id = #{ma_id}
+	</update>
+
+	<!-- 금액 현황 리포트 -->
+	<select id="maReport" parameterType="map" resultType="com.kr.kimchi.vo.MaterialVO">
+		SELECT ma_id, ma_category, ma_name, ma_price, ma_update, ma_date,
+		SUM(ma_stockQuantity) AS totalQuantity,
+		SUM(ma_stockValue) AS
+		totalValue
+		FROM material
+		WHERE 1=1
+		<if test="startDate != null and endDate != null">
+			AND (ma_update BETWEEN #{startDate} AND #{endDate}
+			OR
+			ma_date BETWEEN #{startDate} AND #{endDate})
+		</if>
+		<if test="ma_name != null and ma_name != ''">
+			AND ma_name = #{ma_name}
+		</if>
+		GROUP BY ma_id, ma_category, ma_name, ma_price, ma_update, ma_date
+		ORDER BY ma_category;
+	</select>
+
+</mapper>

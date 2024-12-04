@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kr.kimchi.mappers.pcspMapper">
+	
+	
+	
+	<select id="pcspList" resultType="PcspVO">
+		  select
+		 *
+		 from pcsp
+		 where partner_taxid = #{partner_taxid}
+		 order by pcsp_no desc; 
+	</select>
+	
+	<insert id="pcspInsert" >
+		 insert into pcsp 
+		 (partner_taxid, code_name,pcsp_date, pcsp_notes) 
+		 values (#{partner_taxid},#{code_name},#{pcsp_date},#{pcsp_notes});
+	</insert>
+
+	
+
+
+
+
+</mapper>

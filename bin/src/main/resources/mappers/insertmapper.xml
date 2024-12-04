@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.kim.insertmapper"> <!--중요-->
+
+<!--자재추가-->
+<insert id="material_add" parameterType="MaterialVO">
+	INSERT INTO `kimchi`.`material`
+	(ma_id,
+	ma_name,
+	ma_category,
+	ma_price,
+	ma_unit,
+	ma_specifications,
+	ma_StockQuantity,
+	ma_AvailableStock,
+	ma_BasicStock,	
+	ma_stock_value,
+	ma_storage,s
+	ma_updateDate,
+	attachment_no)
+	VALUES
+	(ma_id=#{ma_id},
+	ma_category=#{ma_category},
+	ma_price=#{ma_price},
+	ma_unit=#{ma_unit},
+	ma_specifications=#{ma_specifications},
+	ma_StockQuantity=#{ma_StockQuantity},
+	ma_AvailableStock=#{ma_AvailableStock},
+	ma_BasicStock=#{ma_BasicStock},
+	ma_stock_value=#{ma_stock_value},
+	ma_storage=#{ma_storage},
+	ma_updateDate=#{ma_updateDate},
+	attachment_no=#{attachment_no})
+	
+</insert>
+
+<!--입고 추가-->
+<insert id="io_add" parameterType="IOVO">
+	INSERT INTO `kimchi`.`io`
+(`io_id`,
+`io_status`,
+`io_quantity`,
+`io_date`,
+`io_information`,
+`io_return_date`,
+`invoice_issuance_status`,
+`ma_id`,
+`obtain_no`)
+VALUES
+(io_id=#{io_id},
+io_status=#{io_status},
+io_quantity=#{io_quantity},
+io_date=now,
+io_information=#{io_information},
+io_return_date=#{io_return_date},
+invoice_issuance_status=#{invoice_issuance_status},
+ma_id=#{ma_id},
+obtain_no=#{obtain_no})
+
+	
+</insert>
+
+
+
+	
+
+
+</mapper>
